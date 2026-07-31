@@ -12,6 +12,7 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(map);
 
 const searchInput = document.getElementById("search");
+const searchSuggestions = document.getElementById("search-suggestions");
 const restaurantList = document.getElementById("restaurant-list");
 const statusBox = document.getElementById("status");
 const resultCount = document.getElementById("result-count");
@@ -143,18 +144,42 @@ async function loadRestaurants() {
 searchInput.addEventListener("input", () => {
   const query = searchInput.value.toLowerCase().trim();
 
+  searchSuggestions.innerHTML = "";
+
   if (query === "") {
-    render(restaurants);
+    searchSuggestions.style.display = "none";
     return;
   }
 
   const filtered = restaurants.filter((item) => {
-  return String(item.name || "")
-    .toLowerCase()
-    .includes(query);
-});
+    return String(item.name || "")
+      .toLowerCase()
+      .includes(query);
+  });
 
-  render(filtered);
+  if (filtered.length === 0) {
+    searchSuggestions.innerHTML =
+      '<div class="suggestion-empty">Kein Restaurant gefunden</div>';
+    searchSuggestions.style.display = "block";
+    return;
+  }
+
+  filtered.forEach((item) => {
+    const suggestion = document.createElement("div");
+    suggestion.className = "search-suggestion";
+    suggestion.textContent = item.name || "Unbenanntes Restaurant";
+
+    suggestion.addEventListener("click", () => {
+      searchInput.value = item.name || "";
+      searchSuggestions.style.display = "none";
+
+      render([item]);
+    });
+
+    searchSuggestions.appendChild(suggestion);
+  });
+
+  searchSuggestions.style.display = "block";
 });
 
 loadRestaurants();
