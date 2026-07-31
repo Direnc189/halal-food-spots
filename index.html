@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Halal Food Spots</title>
+  <meta name="description" content="Halal-Restaurants auf einer interaktiven Karte finden.">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Halal Food Spots</h1>
+      <p>Restaurants über Suche und Karte entdecken</p>
+    </div>
+    <input
+      id="search"
+      type="search"
+      placeholder="Name, Stadt, Kategorie oder Küche suchen …"
+      autocomplete="off"
+      aria-label="Restaurants durchsuchen"
+    >
+  </header>
+
+  <main class="layout">
+    <section class="map-section">
+      <div id="map" aria-label="Karte mit Restaurants"></div>
+    </section>
+
+    <aside class="results-section">
+      <div class="results-header">
+        <h2>Restaurants</h2>
+        <span id="result-count">0 Einträge</span>
+      </div>
+
+      <div id="status" class="status">Daten werden geladen …</div>
+      <div id="restaurant-list" class="restaurant-list"></div>
+    </aside>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
