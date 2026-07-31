@@ -141,26 +141,25 @@ async function loadRestaurants() {
 }
 
 searchInput.addEventListener("input", () => {
-  const query = searchInput.value.toLowerCase().trim();
+    const search = searchInput.value.toLowerCase().trim();
 
-  const filtered = restaurants.filter(item => {
-    const searchable = [
-      item.name,
-      item.kategorie,
-      item.land_der_kueche,
-      item.adresse,
-      item.stadt,
-      item.postleitzahl,
-      item.land
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
+    if (search === "") {
+        render(restaurants);
+        return;
+    }
 
-    return searchable.includes(query);
-  });
+    const filtered = restaurants.filter(r => {
 
-  render(filtered);
+        return (
+            (r.name || "").toLowerCase().startsWith(search) ||
+            (r.stadt || "").toLowerCase().startsWith(search) ||
+            (r.kategorie || "").toLowerCase().startsWith(search) ||
+            (r.land_der_kueche || "").toLowerCase().startsWith(search)
+        );
+
+    });
+
+    render(filtered);
 });
 
 loadRestaurants();
