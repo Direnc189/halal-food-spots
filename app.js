@@ -149,18 +149,10 @@ searchInput.addEventListener("input", () => {
   }
 
   const filtered = restaurants.filter((item) => {
-    const name = String(item.name || "").toLowerCase();
-    const stadt = String(item.stadt || "").toLowerCase();
-    const kategorie = String(item.kategorie || "").toLowerCase();
-    const kueche = String(item.land_der_kueche || "").toLowerCase();
-
-  return (
-  name.includes(query) ||
-  stadt.includes(query) ||
-  kategorie.includes(query) ||
-  kueche.includes(query)
-);
-  });
+  return String(item.name || "")
+    .toLowerCase()
+    .includes(query);
+});
 
   render(filtered);
 });
