@@ -141,25 +141,28 @@ async function loadRestaurants() {
 }
 
 searchInput.addEventListener("input", () => {
-    const search = searchInput.value.toLowerCase().trim();
+  const query = searchInput.value.toLowerCase().trim();
 
-    if (search === "") {
-        render(restaurants);
-        return;
-    }
+  if (query === "") {
+    render(restaurants);
+    return;
+  }
 
-    const filtered = restaurants.filter(r => {
+  const filtered = restaurants.filter((item) => {
+    const name = String(item.name || "").toLowerCase();
+    const stadt = String(item.stadt || "").toLowerCase();
+    const kategorie = String(item.kategorie || "").toLowerCase();
+    const kueche = String(item.land_der_kueche || "").toLowerCase();
 
-        return (
-            (r.name || "").toLowerCase().startsWith(search) ||
-            (r.stadt || "").toLowerCase().startsWith(search) ||
-            (r.kategorie || "").toLowerCase().startsWith(search) ||
-            (r.land_der_kueche || "").toLowerCase().startsWith(search)
-        );
+    return (
+      name.startsWith(query) ||
+      stadt.startsWith(query) ||
+      kategorie.startsWith(query) ||
+      kueche.startsWith(query)
+    );
+  });
 
-    });
-
-    render(filtered);
+  render(filtered);
 });
 
 loadRestaurants();
