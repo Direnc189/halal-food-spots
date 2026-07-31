@@ -154,12 +154,12 @@ searchInput.addEventListener("input", () => {
     const kategorie = String(item.kategorie || "").toLowerCase();
     const kueche = String(item.land_der_kueche || "").toLowerCase();
 
-    return (
-      name.startsWith(query) ||
-      stadt.startsWith(query) ||
-      kategorie.startsWith(query) ||
-      kueche.startsWith(query)
-    );
+  return (
+  name.includes(query) ||
+  stadt.includes(query) ||
+  kategorie.includes(query) ||
+  kueche.includes(query)
+);
   });
 
   render(filtered);
