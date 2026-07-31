@@ -21,6 +21,7 @@ body {
   padding: 20px 28px;
   background: #ffffff;
   border-bottom: 1px solid #dfe7e2;
+  position: relative;
 }
 
 .topbar h1 {
@@ -176,6 +177,7 @@ body {
 .search-suggestions {
   display: none;
   position: absolute;
+  top: 100%;
   left: 0;
   right: 0;
   z-index: 1000;
