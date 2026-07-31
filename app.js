@@ -56,6 +56,7 @@ function popupContent(item) {
     ${address ? "<br>" + escapeHtml(address) : ""}
     ${item.oeffnungszeiten ? "<br><br><strong>Öffnungszeiten:</strong><br>" + escapeHtml(item.oeffnungszeiten) : ""}
     ${item.telefonnummer ? "<br><br><strong>Telefon:</strong> " + escapeHtml(item.telefonnummer) : ""}
+    ${createMapLinks(item)}
   `;
 }
 
@@ -89,6 +90,7 @@ function render(items) {
       ${item.oeffnungszeiten ? `<p>🕒 ${escapeHtml(item.oeffnungszeiten)}</p>` : ""}
       ${item.telefonnummer ? `<p>☎️ ${escapeHtml(item.telefonnummer)}</p>` : ""}
       ${item.webseite ? `<p><a href="${escapeHtml(item.webseite)}" target="_blank" rel="noopener">Webseite öffnen</a></p>` : ""}
+      ${createMapLinks(item)}
     `;
 
     restaurantList.appendChild(card);
@@ -181,5 +183,41 @@ searchInput.addEventListener("input", () => {
 
   searchSuggestions.style.display = "block";
 });
+function createMapLinks(item) {
+  if (!hasCoordinates(item)) {
+    return "";
+  }
 
+  const lat = Number(item.latitude);
+  const lng = Number(item.longitude);
+  const name = encodeURIComponent(clean(item.name || "Restaurant"));
+
+  const googleMapsUrl =
+    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+  const appleMapsUrl =
+    `https://maps.apple.com/?daddr=${lat},${lng}&q=${name}`;
+
+  return `
+    <div class="map-links">
+      <a
+        class="map-button"
+        href="${googleMapsUrl}"
+        target="_blank"
+        rel="noopener"
+      >
+        Google Maps
+      </a>
+
+      <a
+        class="map-button"
+        href="${appleMapsUrl}"
+        target="_blank"
+        rel="noopener"
+      >
+        Apple Karten
+      </a>
+    </div>
+  `;
+}
 loadRestaurants();
