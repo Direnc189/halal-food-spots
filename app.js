@@ -23,6 +23,7 @@ const menuOverlay = document.getElementById("menu-overlay");
 const menuEntries = document.querySelectorAll(".menu-entry");
 const pageTitle = document.getElementById("page-title");
 const pageSubtitle = document.getElementById("page-subtitle");
+const resultsTitle = document.getElementById("results-title");
 
 let restaurants = [];
 let markerLayer = L.layerGroup().addTo(map);
