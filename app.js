@@ -4,90 +4,38 @@ const SUPABASE_KEY = "sb_publishable_8qRvMeEpTjBzPsCDGFYqcg_E9hhIqjB";
 let currentTable = "Halalfood";
 let currentView = "map";
 
-const client = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const map = L.map("map").setView(
-  [50.1109, 8.6821],
-  9
-);
+const map = L.map("map").setView([50.1109, 8.6821], 9);
 
-L.tileLayer(
-  "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap-Mitwirkende"
-  }
-).addTo(map);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: "&copy; OpenStreetMap-Mitwirkende"
+}).addTo(map);
 
-/* Allgemeine Elemente */
+const searchInput = document.getElementById("search");
+const searchSuggestions = document.getElementById("search-suggestions");
+const menuEntries = document.querySelectorAll(".menu-entry");
+const pageTitle = document.getElementById("page-title");
+const pageSubtitle = document.getElementById("page-subtitle");
 
-const searchInput =
-  document.getElementById("search");
+const mapLayout = document.getElementById("map-layout");
+const restaurantList = document.getElementById("restaurant-list");
+const statusBox = document.getElementById("status");
+const resultCount = document.getElementById("result-count");
+const resultsTitle = document.getElementById("results-title");
+const mapInfoCard = document.getElementById("map-info-card");
 
-const searchSuggestions =
-  document.getElementById("search-suggestions");
-
-const menuEntries =
-  document.querySelectorAll(".menu-entry");
-
-const pageTitle =
-  document.getElementById("page-title");
-
-const pageSubtitle =
-  document.getElementById("page-subtitle");
-
-/* Kartenansicht */
-
-const mapLayout =
-  document.getElementById("map-layout");
-
-const restaurantList =
-  document.getElementById("restaurant-list");
-
-const statusBox =
-  document.getElementById("status");
-
-const resultCount =
-  document.getElementById("result-count");
-
-const resultsTitle =
-  document.getElementById("results-title");
-
-const mapInfoCard =
-  document.getElementById("map-info-card");
-
-/* Fleischmarkenansicht */
-
-const brandsLayout =
-  document.getElementById("brands-layout");
-
-const brandList =
-  document.getElementById("brand-list");
-
-const brandStatus =
-  document.getElementById("brand-status");
-
-const brandResultCount =
-  document.getElementById("brand-result-count");
-
-/* Daten */
+const brandsLayout = document.getElementById("brands-layout");
+const brandList = document.getElementById("brand-list");
+const brandStatus = document.getElementById("brand-status");
+const brandResultCount = document.getElementById("brand-result-count");
 
 let entries = [];
-
-let markerLayer =
-  L.layerGroup().addTo(map);
-
-/* Hilfsfunktionen */
+let markerLayer = L.layerGroup().addTo(map);
 
 function clean(value) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  return String(value).trim();
+  return value === null || value === undefined ? "" : String(value).trim();
 }
 
 function escapeHtml(value) {
@@ -99,88 +47,38 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function createAddress(item) {
-  const street = clean(item.adresse);
-
-  const cityLine = [
-    clean(item.postleitzahl),
-    clean(item.stadt)
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return [
-    street,
-    cityLine
-  ]
-    .filter(Boolean)
-    .join(", ");
-}
-
-function hasCoordinates(item) {
-  const latitude = Number(item.latitude);
-  const longitude = Number(item.longitude);
-
-  return (
-    Number.isFinite(latitude) &&
-    Number.isFinite(longitude)
-  );
-}
-
-function isYes(value) {
-  const normalized = clean(value).toLowerCase();
-
-  return [
-    "ja",
-    "true",
-    "1",
-    "yes"
-  ].includes(normalized);
-}
-
 function safeExternalUrl(value) {
   const url = clean(value);
-
-  if (!url) {
-    return "";
-  }
-
-  if (
-    url.startsWith("http://") ||
-    url.startsWith("https://")
-  ) {
-    return url;
-  }
-
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
   return `https://${url}`;
 }
 
-/* Öffnungszeiten */
+function isYes(value) {
+  return ["ja", "true", "1", "yes"].includes(clean(value).toLowerCase());
+}
+
+function createAddress(item) {
+  return [
+    clean(item.adresse),
+    [clean(item.postleitzahl), clean(item.stadt)].filter(Boolean).join(" ")
+  ].filter(Boolean).join(", ");
+}
+
+function hasCoordinates(item) {
+  return Number.isFinite(Number(item.latitude)) &&
+         Number.isFinite(Number(item.longitude));
+}
 
 function formatOpeningHours(value) {
   const text = clean(value);
+  const emptyValues = ["", "null", "undefined", "-", "keine angabe", "nicht bekannt"];
 
-  const emptyValues = [
-    "",
-    "null",
-    "undefined",
-    "-",
-    "keine angabe",
-    "nicht bekannt"
-  ];
-
-  if (emptyValues.includes(text.toLowerCase())) {
-    return "";
-  }
+  if (emptyValues.includes(text.toLowerCase())) return "";
 
   const days = [
-    "Montag",
-    "Dienstag",
-    "Mittwoch",
-    "Donnerstag",
-    "Freitag",
-    "Samstag",
-    "Sonntag"
+    "Montag", "Dienstag", "Mittwoch", "Donnerstag",
+    "Freitag", "Samstag", "Sonntag"
   ];
 
   let normalized = text
@@ -201,33 +99,17 @@ function formatOpeningHours(value) {
     .map((part) => part.trim())
     .filter(Boolean)
     .map((part) => {
-      const separatorIndex =
-        part.indexOf("#");
+      const separatorIndex = part.indexOf("#");
+      if (separatorIndex === -1) return "";
 
-      if (separatorIndex === -1) {
-        return "";
-      }
+      const day = part.slice(0, separatorIndex).trim();
+      const hours = part.slice(separatorIndex + 1).trim();
+      if (!day || !hours) return "";
 
-      const day = part
-        .slice(0, separatorIndex)
-        .trim();
-
-      const hours = part
-        .slice(separatorIndex + 1)
-        .trim();
-
-      if (!day || !hours) {
-        return "";
-      }
-
-      const formattedHours =
-        escapeHtml(hours)
-          .replace(/\s*;\s*/g, "<br>")
-          .replace(/\s*\/\s*/g, "<br>")
-          .replace(
-            /\s*,\s*(?=\d{1,2}:\d{2})/g,
-            "<br>"
-          );
+      const formattedHours = escapeHtml(hours)
+        .replace(/\s*;\s*/g, "<br>")
+        .replace(/\s*\/\s*/g, "<br>")
+        .replace(/\s*,\s*(?=\d{1,2}:\d{2})/g, "<br>");
 
       return `
         <div class="opening-row">
@@ -239,182 +121,69 @@ function formatOpeningHours(value) {
     .filter(Boolean)
     .join("");
 
-  if (!rows) {
-    return "";
-  }
+  if (!rows) return "";
 
   return `
     <details class="opening-details">
-      <summary>
-        🕒 Öffnungszeiten anzeigen
-      </summary>
-
-      <div class="opening-list">
-        ${rows}
-      </div>
+      <summary>🕒 Öffnungszeiten anzeigen</summary>
+      <div class="opening-list">${rows}</div>
     </details>
   `;
 }
 
-/* Kartenlinks */
-
 function createMapLinks(item) {
-  if (!hasCoordinates(item)) {
-    return "";
-  }
+  if (!hasCoordinates(item)) return "";
 
-  const latitude =
-    Number(item.latitude);
-
-  const longitude =
-    Number(item.longitude);
-
-  const name =
-    encodeURIComponent(
-      clean(item.name || "Eintrag")
-    );
-
-  const googleMapsUrl =
-    "https://www.google.com/maps/dir/" +
-    `?api=1&destination=${latitude},${longitude}`;
-
-  const appleMapsUrl =
-    "https://maps.apple.com/" +
-    `?daddr=${latitude},${longitude}&q=${name}`;
+  const lat = Number(item.latitude);
+  const lng = Number(item.longitude);
+  const name = encodeURIComponent(clean(item.name || "Eintrag"));
 
   return `
     <div class="map-links">
-      <a
-        class="map-button"
-        href="${googleMapsUrl}"
-        target="_blank"
-        rel="noopener"
-      >
-        Google Maps
-      </a>
+      <a class="map-button"
+         href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}"
+         target="_blank" rel="noopener">Google Maps</a>
 
-      <a
-        class="map-button"
-        href="${appleMapsUrl}"
-        target="_blank"
-        rel="noopener"
-      >
-        Apple Karten
-      </a>
+      <a class="map-button"
+         href="https://maps.apple.com/?daddr=${lat},${lng}&q=${name}"
+         target="_blank" rel="noopener">Apple Karten</a>
     </div>
   `;
 }
 
-/* Infokarte auf der Karte */
-
 function hideMapInfo() {
-  if (!mapInfoCard) {
-    return;
-  }
-
+  if (!mapInfoCard) return;
   mapInfoCard.classList.remove("visible");
   mapInfoCard.innerHTML = "";
 }
 
 function showMapInfo(item) {
-  if (!mapInfoCard) {
-    return;
-  }
+  if (!mapInfoCard) return;
 
-  const address =
-    createAddress(item);
+  const address = createAddress(item);
 
   mapInfoCard.innerHTML = `
-    <button
-      class="map-info-close"
-      type="button"
-      aria-label="Infokarte schließen"
-    >
-      ×
-    </button>
-
-    <h3>
-      ${escapeHtml(item.name || "Eintrag")}
-    </h3>
-
-    ${
-      address
-        ? `<p>📍 ${escapeHtml(address)}</p>`
-        : ""
-    }
-
+    <button class="map-info-close" type="button" aria-label="Infokarte schließen">×</button>
+    <h3>${escapeHtml(item.name || "Eintrag")}</h3>
+    ${address ? `<p>📍 ${escapeHtml(address)}</p>` : ""}
     ${formatOpeningHours(item.oeffnungszeiten)}
-
-    ${
-      item.telefonnummer
-        ? `
-          <p>
-            ☎️
-            <a href="tel:${escapeHtml(item.telefonnummer)}">
-              ${escapeHtml(item.telefonnummer)}
-            </a>
-          </p>
-        `
-        : ""
-    }
-
-    ${
-      item.webseite
-        ? `
-          <p>
-            <a
-              href="${escapeHtml(safeExternalUrl(item.webseite))}"
-              target="_blank"
-              rel="noopener"
-            >
-              Webseite öffnen
-            </a>
-          </p>
-        `
-        : ""
-    }
-
-    ${
-      item.hinweise
-        ? `
-          <div class="hinweis">
-            ℹ️ ${escapeHtml(item.hinweise)}
-          </div>
-        `
-        : ""
-    }
-
+    ${item.telefonnummer ? `<p>☎️ <a href="tel:${escapeHtml(item.telefonnummer)}">${escapeHtml(item.telefonnummer)}</a></p>` : ""}
+    ${item.webseite ? `<p><a href="${escapeHtml(safeExternalUrl(item.webseite))}" target="_blank" rel="noopener">Webseite öffnen</a></p>` : ""}
+    ${item.hinweise ? `<div class="hinweis">ℹ️ ${escapeHtml(item.hinweise)}</div>` : ""}
     ${createMapLinks(item)}
   `;
 
   mapInfoCard.classList.add("visible");
 
-  const closeButton =
-    mapInfoCard.querySelector(".map-info-close");
+  mapInfoCard.querySelector(".map-info-close")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    hideMapInfo();
+  });
 
-  if (closeButton) {
-    closeButton.addEventListener(
-      "click",
-      (event) => {
-        event.stopPropagation();
-        hideMapInfo();
-      }
-    );
-  }
-
-  mapInfoCard
-    .querySelectorAll("a, summary, details")
-    .forEach((element) => {
-      element.addEventListener(
-        "click",
-        (event) => {
-          event.stopPropagation();
-        }
-      );
-    });
+  mapInfoCard.querySelectorAll("a, summary, details").forEach((element) => {
+    element.addEventListener("click", (event) => event.stopPropagation());
+  });
 }
-
-/* Restaurants und Metzgereien rendern */
 
 function renderMapEntries(items) {
   restaurantList.innerHTML = "";
@@ -422,413 +191,217 @@ function renderMapEntries(items) {
   hideMapInfo();
 
   resultCount.textContent =
-    `${items.length} ${
-      items.length === 1
-        ? "Eintrag"
-        : "Einträge"
-    }`;
+    `${items.length} ${items.length === 1 ? "Eintrag" : "Einträge"}`;
 
-  if (items.length === 0) {
+  if (!items.length) {
     restaurantList.innerHTML =
       '<div class="empty">Keine passenden Einträge gefunden.</div>';
-
     return;
   }
 
   const coordinates = [];
 
   items.forEach((item) => {
-    const card =
-      document.createElement("article");
+    const card = document.createElement("article");
+    card.className = "restaurant-card";
 
-    card.className =
-      "restaurant-card";
-
-    const address =
-      createAddress(item);
-
-    const badges = [
-      item.kategorie,
-      item.land_der_kueche
-    ]
+    const address = createAddress(item);
+    const badges = [item.kategorie, item.land_der_kueche]
       .filter(Boolean)
-      .map((value) => {
-        return `
-          <span class="badge">
-            ${escapeHtml(value)}
-          </span>
-        `;
-      })
+      .map((value) => `<span class="badge">${escapeHtml(value)}</span>`)
       .join("");
 
     card.innerHTML = `
-      <h3>
-        ${escapeHtml(
-          item.name ||
-          "Unbenannter Eintrag"
-        )}
-      </h3>
-
-      ${
-        badges
-          ? `<div>${badges}</div>`
-          : ""
-      }
-
-      ${
-        address
-          ? `<p>📍 ${escapeHtml(address)}</p>`
-          : ""
-      }
-
-      ${formatOpeningHours(
-        item.oeffnungszeiten
-      )}
-
-      ${
-        item.telefonnummer
-          ? `
-            <p>
-              ☎️
-              <a href="tel:${escapeHtml(item.telefonnummer)}">
-                ${escapeHtml(item.telefonnummer)}
-              </a>
-            </p>
-          `
-          : ""
-      }
-
-      ${
-        item.webseite
-          ? `
-            <p>
-              <a
-                href="${escapeHtml(safeExternalUrl(item.webseite))}"
-                target="_blank"
-                rel="noopener"
-              >
-                Webseite öffnen
-              </a>
-            </p>
-          `
-          : ""
-      }
-
-      ${
-        item.hinweise
-          ? `
-            <p class="hinweis">
-              ℹ️ ${escapeHtml(item.hinweise)}
-            </p>
-          `
-          : ""
-      }
-
+      <h3>${escapeHtml(item.name || "Unbenannter Eintrag")}</h3>
+      ${badges ? `<div>${badges}</div>` : ""}
+      ${address ? `<p>📍 ${escapeHtml(address)}</p>` : ""}
+      ${formatOpeningHours(item.oeffnungszeiten)}
+      ${item.telefonnummer ? `<p>☎️ <a href="tel:${escapeHtml(item.telefonnummer)}">${escapeHtml(item.telefonnummer)}</a></p>` : ""}
+      ${item.webseite ? `<p><a href="${escapeHtml(safeExternalUrl(item.webseite))}" target="_blank" rel="noopener">Webseite öffnen</a></p>` : ""}
+      ${item.hinweise ? `<p class="hinweis">ℹ️ ${escapeHtml(item.hinweise)}</p>` : ""}
       ${createMapLinks(item)}
     `;
 
-    card
-      .querySelectorAll("a, summary, details")
-      .forEach((element) => {
-        element.addEventListener(
-          "click",
-          (event) => {
-            event.stopPropagation();
-          }
-        );
-      });
+    card.querySelectorAll("a, summary, details").forEach((element) => {
+      element.addEventListener("click", (event) => event.stopPropagation());
+    });
 
     restaurantList.appendChild(card);
 
-    if (!hasCoordinates(item)) {
-      return;
-    }
+    if (!hasCoordinates(item)) return;
 
-    const latitude =
-      Number(item.latitude);
+    const lat = Number(item.latitude);
+    const lng = Number(item.longitude);
 
-    const longitude =
-      Number(item.longitude);
+    const marker = L.marker([lat, lng]).addTo(markerLayer);
+    coordinates.push([lat, lng]);
 
-    const marker =
-      L.marker([
-        latitude,
-        longitude
-      ]).addTo(markerLayer);
+    marker.on("click", () => showMapInfo(item));
 
-    coordinates.push([
-      latitude,
-      longitude
-    ]);
-
-    marker.on("click", () => {
+    card.addEventListener("click", () => {
+      map.setView([lat, lng], 16);
       showMapInfo(item);
     });
-
-    card.addEventListener(
-      "click",
-      () => {
-        map.setView(
-          [latitude, longitude],
-          16
-        );
-
-        showMapInfo(item);
-      }
-    );
   });
 
   if (coordinates.length === 1) {
-    map.setView(
-      coordinates[0],
-      14
-    );
+    map.setView(coordinates[0], 14);
   } else if (coordinates.length > 1) {
-    map.fitBounds(
-      coordinates,
-      {
-        padding: [35, 35]
-      }
-    );
+    map.fitBounds(coordinates, { padding: [35, 35] });
   }
 }
 
-/* Fleischmarken rendern */
-
-function createBrandImage(item) {
-  const imageUrl =
-    safeExternalUrl(item.bild);
+function createBrandSummaryImage(item) {
+  const imageUrl = safeExternalUrl(item.bild);
 
   if (imageUrl) {
     return `
-      <div class="brand-image-wrapper">
-        <img
-          class="brand-image"
-          src="${escapeHtml(imageUrl)}"
-          alt="${escapeHtml(item.name || "Fleischmarke")}"
-          loading="lazy"
-          onerror="this.parentElement.innerHTML='<div class=&quot;brand-image-placeholder&quot;>🥩</div>'"
-        >
-      </div>
+      <img class="brand-mini-image"
+           src="${escapeHtml(imageUrl)}"
+           alt="${escapeHtml(item.name || "Fleischmarke")}"
+           loading="lazy"
+           onerror="this.outerHTML='<div class=&quot;brand-mini-placeholder&quot;>🥩</div>'">
     `;
   }
 
-  return `
-    <div class="brand-image-wrapper">
-      <div class="brand-image-placeholder">
-        🥩
-      </div>
-    </div>
-  `;
+  return '<div class="brand-mini-placeholder">🥩</div>';
 }
 
 function renderBrandEntries(items) {
   brandList.innerHTML = "";
 
   brandResultCount.textContent =
-    `${items.length} ${
-      items.length === 1
-        ? "Eintrag"
-        : "Einträge"
-    }`;
+    `${items.length} ${items.length === 1 ? "Eintrag" : "Einträge"}`;
 
-  if (items.length === 0) {
+  if (!items.length) {
     brandList.innerHTML =
       '<div class="empty">Keine passenden Fleischmarken gefunden.</div>';
-
     return;
   }
 
   items.forEach((item) => {
-    const card =
-      document.createElement("article");
+    const details = document.createElement("details");
+    details.className = "brand-accordion";
 
-    card.className =
-      "brand-card";
+    const website = safeExternalUrl(item.webseite);
+    const certificate = safeExternalUrl(item.zertifikat_link);
 
-    const website =
-      safeExternalUrl(item.webseite);
+    const tags = [item.kategorie, item.herkunft]
+      .filter(Boolean)
+      .map((value) => `<span class="brand-tag">${escapeHtml(value)}</span>`)
+      .join("");
 
-    const certificate =
-      safeExternalUrl(item.zertifikat_link);
+    details.innerHTML = `
+      <summary class="brand-summary">
+        <div class="brand-summary-main">
+          ${createBrandSummaryImage(item)}
 
-    const halalLabel =
-      isYes(item.halal_zertifiziert)
-        ? `
-          <div class="halal-verified">
-            ✓ Halal zertifiziert
+          <div class="brand-summary-text">
+            <h3>${escapeHtml(item.name || "Unbenannte Marke")}</h3>
+            <div class="brand-summary-meta">${tags}</div>
           </div>
-        `
-        : "";
-
-    card.innerHTML = `
-      ${createBrandImage(item)}
-
-      <div class="brand-card-content">
-        <h3>
-          ${escapeHtml(item.name || "Unbenannte Marke")}
-        </h3>
-
-        <div class="brand-meta">
-          ${
-            item.kategorie
-              ? `
-                <span class="brand-tag">
-                  ${escapeHtml(item.kategorie)}
-                </span>
-              `
-              : ""
-          }
-
-          ${
-            item.herkunft
-              ? `
-                <span class="brand-tag">
-                  ${escapeHtml(item.herkunft)}
-                </span>
-              `
-              : ""
-          }
         </div>
 
-        ${halalLabel}
+        <span class="brand-chevron">⌄</span>
+      </summary>
 
-        ${
-          item.zertifizierungsstelle
-            ? `
-              <p>
-                <strong>Zertifizierungsstelle:</strong><br>
-                ${escapeHtml(item.zertifizierungsstelle)}
-              </p>
-            `
-            : ""
-        }
+      <div class="brand-details">
+        <div class="brand-details-grid">
+          ${item.kategorie ? `
+            <div class="brand-detail-box">
+              <strong>Kategorie</strong>
+              ${escapeHtml(item.kategorie)}
+            </div>` : ""}
 
-        ${
-          item.hinweise
-            ? `
-              <p class="hinweis">
-                ℹ️ ${escapeHtml(item.hinweise)}
-              </p>
-            `
-            : ""
-        }
+          ${item.herkunft ? `
+            <div class="brand-detail-box">
+              <strong>Herkunft</strong>
+              ${escapeHtml(item.herkunft)}
+            </div>` : ""}
 
-        ${
-          website || certificate
-            ? `
-              <div class="brand-actions">
-                ${
-                  website
-                    ? `
-                      <a
-                        class="brand-link"
-                        href="${escapeHtml(website)}"
-                        target="_blank"
-                        rel="noopener"
-                      >
-                        Herstellerseite
-                      </a>
-                    `
-                    : ""
-                }
+          ${item.zertifizierungsstelle ? `
+            <div class="brand-detail-box">
+              <strong>Zertifizierungsstelle</strong>
+              ${escapeHtml(item.zertifizierungsstelle)}
+            </div>` : ""}
+        </div>
 
-                ${
-                  certificate
-                    ? `
-                      <a
-                        class="brand-link secondary"
-                        href="${escapeHtml(certificate)}"
-                        target="_blank"
-                        rel="noopener"
-                      >
-                        Zertifikat
-                      </a>
-                    `
-                    : ""
-                }
-              </div>
-            `
-            : ""
-        }
+        ${isYes(item.halal_zertifiziert)
+          ? '<div class="halal-verified">✓ Halal zertifiziert</div>'
+          : ""}
+
+        ${item.hinweise
+          ? `<div class="hinweis">ℹ️ ${escapeHtml(item.hinweise)}</div>`
+          : ""}
+
+        ${(website || certificate) ? `
+          <div class="brand-actions">
+            ${website ? `
+              <a class="brand-link"
+                 href="${escapeHtml(website)}"
+                 target="_blank"
+                 rel="noopener">Herstellerseite</a>` : ""}
+
+            ${certificate ? `
+              <a class="brand-link secondary"
+                 href="${escapeHtml(certificate)}"
+                 target="_blank"
+                 rel="noopener">Zertifikat</a>` : ""}
+          </div>` : ""}
       </div>
     `;
 
-    brandList.appendChild(card);
+    brandList.appendChild(details);
   });
 }
-
-/* Ansicht wechseln */
 
 function showMapView() {
   mapLayout.hidden = false;
   brandsLayout.hidden = true;
 
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 50);
+  setTimeout(() => map.invalidateSize(), 50);
 }
 
 function showBrandsView() {
   mapLayout.hidden = true;
   brandsLayout.hidden = false;
-
   hideMapInfo();
   markerLayer.clearLayers();
 }
 
-/* Daten laden */
-
 async function loadEntries() {
   entries = [];
-
   searchInput.value = "";
   searchSuggestions.innerHTML = "";
   searchSuggestions.style.display = "none";
 
   if (currentView === "brands") {
     showBrandsView();
-
     brandList.innerHTML = "";
     brandResultCount.textContent = "0 Einträge";
-
     brandStatus.style.display = "block";
-    brandStatus.textContent =
-      "Daten werden geladen …";
+    brandStatus.textContent = "Daten werden geladen …";
   } else {
     showMapView();
-
     restaurantList.innerHTML = "";
     markerLayer.clearLayers();
     hideMapInfo();
-
     resultCount.textContent = "0 Einträge";
-
     statusBox.style.display = "block";
-    statusBox.textContent =
-      "Daten werden geladen …";
+    statusBox.textContent = "Daten werden geladen …";
   }
 
-  const { data, error } =
-    await client
-      .from(currentTable)
-      .select("*")
-      .order(
-        "name",
-        {
-          ascending: true
-        }
-      );
+  const { data, error } = await client
+    .from(currentTable)
+    .select("*")
+    .order("name", { ascending: true });
 
   if (error) {
     console.error(error);
 
     const errorHtml = `
-      Die Daten konnten nicht geladen werden.
-      <br>
-      <small>
-        ${escapeHtml(error.message)}
-      </small>
+      Die Daten konnten nicht geladen werden.<br>
+      <small>${escapeHtml(error.message)}</small>
     `;
 
     if (currentView === "brands") {
@@ -836,7 +409,6 @@ async function loadEntries() {
     } else {
       statusBox.innerHTML = errorHtml;
     }
-
     return;
   }
 
@@ -851,8 +423,6 @@ async function loadEntries() {
   }
 }
 
-/* Suche */
-
 function renderFilteredEntries(items) {
   if (currentView === "brands") {
     renderBrandEntries(items);
@@ -861,154 +431,78 @@ function renderFilteredEntries(items) {
   }
 }
 
-searchInput.addEventListener(
-  "input",
-  () => {
-    const query =
-      searchInput.value
-        .toLowerCase()
-        .trim();
+searchInput.addEventListener("input", () => {
+  const query = searchInput.value.toLowerCase().trim();
+  searchSuggestions.innerHTML = "";
 
-    searchSuggestions.innerHTML = "";
+  if (!query) {
+    searchSuggestions.style.display = "none";
+    renderFilteredEntries(entries);
+    return;
+  }
 
-    if (!query) {
-      searchSuggestions.style.display =
-        "none";
+  const filtered = entries.filter((item) =>
+    String(item.name || "").toLowerCase().includes(query)
+  );
 
-      renderFilteredEntries(entries);
+  if (!filtered.length) {
+    searchSuggestions.innerHTML =
+      '<div class="suggestion-empty">Kein Eintrag gefunden</div>';
+    searchSuggestions.style.display = "block";
+    renderFilteredEntries([]);
+    return;
+  }
 
-      return;
-    }
+  filtered.forEach((item) => {
+    const suggestion = document.createElement("div");
+    suggestion.className = "search-suggestion";
+    suggestion.textContent = item.name || "Unbenannter Eintrag";
 
-    const filtered =
-      entries.filter((item) => {
-        return String(
-          item.name || ""
-        )
-          .toLowerCase()
-          .includes(query);
-      });
+    suggestion.addEventListener("click", () => {
+      searchInput.value = item.name || "";
+      searchSuggestions.style.display = "none";
+      renderFilteredEntries([item]);
 
-    if (filtered.length === 0) {
-      searchSuggestions.innerHTML =
-        '<div class="suggestion-empty">Kein Eintrag gefunden</div>';
-
-      searchSuggestions.style.display =
-        "block";
-
-      renderFilteredEntries([]);
-
-      return;
-    }
-
-    filtered.forEach((item) => {
-      const suggestion =
-        document.createElement("div");
-
-      suggestion.className =
-        "search-suggestion";
-
-      suggestion.textContent =
-        item.name ||
-        "Unbenannter Eintrag";
-
-      suggestion.addEventListener(
-        "click",
-        () => {
-          searchInput.value =
-            item.name || "";
-
-          searchSuggestions.style.display =
-            "none";
-
-          renderFilteredEntries([item]);
-
-          if (
-            currentView === "map" &&
-            hasCoordinates(item)
-          ) {
-            const latitude =
-              Number(item.latitude);
-
-            const longitude =
-              Number(item.longitude);
-
-            map.setView(
-              [latitude, longitude],
-              16
-            );
-
-            showMapInfo(item);
-          }
-        }
-      );
-
-      searchSuggestions.appendChild(
-        suggestion
-      );
+      if (currentView === "map" && hasCoordinates(item)) {
+        const lat = Number(item.latitude);
+        const lng = Number(item.longitude);
+        map.setView([lat, lng], 16);
+        showMapInfo(item);
+      }
     });
 
-    searchSuggestions.style.display =
-      "block";
-  }
-);
+    searchSuggestions.appendChild(suggestion);
+  });
 
-document.addEventListener(
-  "click",
-  (event) => {
-    if (
-      !searchInput.contains(event.target) &&
-      !searchSuggestions.contains(event.target)
-    ) {
-      searchSuggestions.style.display =
-        "none";
-    }
-  }
-);
-
-/* Menüpunkte */
-
-menuEntries.forEach((entry) => {
-  entry.addEventListener(
-    "click",
-    () => {
-      currentTable =
-        entry.dataset.table;
-
-      currentView =
-        entry.dataset.view || "map";
-
-      menuEntries.forEach(
-        (button) => {
-          button.classList.remove(
-            "active"
-          );
-        }
-      );
-
-      entry.classList.add(
-        "active"
-      );
-
-      pageTitle.textContent =
-        entry.dataset.title;
-
-      pageSubtitle.textContent =
-        entry.dataset.subtitle;
-
-      if (
-        currentView === "map" &&
-        resultsTitle
-      ) {
-        resultsTitle.textContent =
-          entry.dataset.resultsTitle;
-      }
-
-      loadEntries();
-    }
-  );
+  searchSuggestions.style.display = "block";
 });
 
-/* Start */
+document.addEventListener("click", (event) => {
+  if (
+    !searchInput.contains(event.target) &&
+    !searchSuggestions.contains(event.target)
+  ) {
+    searchSuggestions.style.display = "none";
+  }
+});
+
+menuEntries.forEach((entry) => {
+  entry.addEventListener("click", () => {
+    currentTable = entry.dataset.table;
+    currentView = entry.dataset.view || "map";
+
+    menuEntries.forEach((button) => button.classList.remove("active"));
+    entry.classList.add("active");
+
+    pageTitle.textContent = entry.dataset.title;
+    pageSubtitle.textContent = entry.dataset.subtitle;
+
+    if (currentView === "map" && resultsTitle) {
+      resultsTitle.textContent = entry.dataset.resultsTitle;
+    }
+
+    loadEntries();
+  });
+});
 
 loadEntries();
