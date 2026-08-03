@@ -239,3 +239,50 @@ body {
     border-top: 1px solid #dfe7e2;
   }
 }
+.opening-details {
+  margin-top: 10px;
+}
+
+.opening-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #237a4b;
+  list-style: none;
+}
+
+.opening-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.opening-details summary::after {
+  content: " ▼";
+  font-size: 12px;
+}
+
+.opening-details[open] summary::after {
+  content: " ▲";
+}
+
+.opening-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.opening-row {
+  display: grid;
+  grid-template-columns: 95px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.opening-row strong {
+  color: #17201b;
+}
+
+.opening-row span {
+  white-space: pre-line;
+  color: #536259;
+}
