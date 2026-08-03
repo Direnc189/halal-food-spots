@@ -215,3 +215,35 @@ body {
   color: #5f4b00;
   line-height: 1.4;
 }
+menuEntries.forEach((entry) => {
+  entry.addEventListener("click", () => {
+    currentTable = entry.dataset.table;
+
+    menuEntries.forEach((button) => {
+      button.classList.remove("active");
+    });
+
+    entry.classList.add("active");
+
+    pageTitle.textContent = entry.dataset.title;
+
+    if (currentTable === "Halalfood") {
+      pageSubtitle.textContent =
+        "Restaurants über Suche und Karte entdecken";
+
+      resultsTitle.textContent = "Restaurants";
+    } else if (currentTable === "Metzger") {
+      pageSubtitle.textContent =
+        "Metzgereien über Suche und Karte entdecken";
+
+      resultsTitle.textContent = "Metzgereien";
+    }
+
+    searchInput.value = "";
+    searchSuggestions.innerHTML = "";
+    searchSuggestions.style.display = "none";
+
+    closeMenu();
+    loadRestaurants();
+  });
+});
