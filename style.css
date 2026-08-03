@@ -197,13 +197,26 @@ body {
 
 .map-button {
   display: inline-block;
-  padding: 9px 12px;
+  padding: 10px 14px;
   border-radius: 8px;
   background: #237a4b;
-  color: #ffffff;
-  text-decoration: none;
+  color: #ffffff !important;
+  text-decoration: none !important;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.map-button:visited,
+.map-button:hover,
+.map-button:active,
+.map-button:focus {
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+.map-button:hover {
+  background: #185f39;
 }
 
 .empty {
@@ -245,9 +258,10 @@ body {
 
 .opening-details summary {
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   color: #237a4b;
   list-style: none;
+  user-select: none;
 }
 
 .opening-details summary::-webkit-details-marker {
