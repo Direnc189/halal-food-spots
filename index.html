@@ -3,22 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Eat Halal Food</title>
-  <meta name="description" content="Halal-Restaurants und Metzgereien auf einer interaktiven Karte finden.">
+
+  <meta
+    name="description"
+    content="Halal-Restaurants, Metzgereien und Fleischmarken entdecken."
+  >
+
   <link rel="preconnect" href="https://unpkg.com">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
+
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <header class="topbar">
     <div class="brand-block">
       <h1 id="page-title">Halal Restaurants</h1>
-      <p id="page-subtitle">Restaurants über Suche und Karte entdecken</p>
+
+      <p id="page-subtitle">
+        Restaurants über Suche und Karte entdecken
+      </p>
 
       <nav class="category-nav" aria-label="Bereiche">
         <button
           class="menu-entry active"
           data-table="Halalfood"
+          data-view="map"
           data-title="Halal Restaurants"
           data-subtitle="Restaurants über Suche und Karte entdecken"
           data-results-title="Restaurants"
@@ -30,12 +46,25 @@
         <button
           class="menu-entry"
           data-table="Metzgereien"
+          data-view="map"
           data-title="Halal Metzgereien"
           data-subtitle="Metzgereien über Suche und Karte entdecken"
           data-results-title="Metzgereien"
           type="button"
         >
           Metzgereien
+        </button>
+
+        <button
+          class="menu-entry"
+          data-table="Fleischmarken"
+          data-view="brands"
+          data-title="Halal Fleischmarken"
+          data-subtitle="Fleischmarken und Produkte entdecken"
+          data-results-title="Fleischmarken"
+          type="button"
+        >
+          Fleischmarken
         </button>
       </nav>
     </div>
@@ -48,34 +77,77 @@
         autocomplete="off"
         aria-label="Nach Namen suchen"
       >
-      <div id="search-suggestions" class="search-suggestions"></div>
+
+      <div
+        id="search-suggestions"
+        class="search-suggestions"
+      ></div>
     </div>
   </header>
 
-  <main class="layout">
+  <main id="map-layout" class="layout">
     <section class="map-section">
-  <div id="map" aria-label="Karte mit Einträgen"></div>
+      <div
+        id="map"
+        aria-label="Karte mit Einträgen"
+      ></div>
 
-  <div
-    id="map-info-card"
-    class="map-info-card"
-    aria-live="polite"
-  ></div>
-</section>
+      <div
+        id="map-info-card"
+        class="map-info-card"
+        aria-live="polite"
+      ></div>
+    </section>
 
     <aside class="results-section">
       <div class="results-header">
         <h2 id="results-title">Restaurants</h2>
-        <span id="result-count">0 Einträge</span>
+
+        <span id="result-count">
+          0 Einträge
+        </span>
       </div>
 
-      <div id="status" class="status">Daten werden geladen …</div>
-      <div id="restaurant-list" class="restaurant-list"></div>
+      <div id="status" class="status">
+        Daten werden geladen …
+      </div>
+
+      <div
+        id="restaurant-list"
+        class="restaurant-list"
+      ></div>
     </aside>
   </main>
 
+  <main
+    id="brands-layout"
+    class="brands-layout"
+    hidden
+  >
+    <section class="brands-section">
+      <div class="results-header">
+        <h2>Fleischmarken</h2>
+
+        <span id="brand-result-count">
+          0 Einträge
+        </span>
+      </div>
+
+      <div id="brand-status" class="status">
+        Daten werden geladen …
+      </div>
+
+      <div
+        id="brand-list"
+        class="brand-list"
+      ></div>
+    </section>
+  </main>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="app.js"></script>
 </body>
 </html>
