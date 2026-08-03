@@ -160,6 +160,11 @@ function render(items) {
 }
 
 async function loadEntries() {
+  entries = [];
+  restaurantList.innerHTML = "";
+  markerLayer.clearLayers();
+  resultCount.textContent = "0 Einträge";
+
   statusBox.style.display = "block";
   statusBox.textContent = "Daten werden geladen …";
 
