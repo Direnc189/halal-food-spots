@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://bjoxewglffzjdpuayiff.supabase.co";
 const SUPABASE_KEY = "sb_publishable_8qRvMeEpTjBzPsCDGFYqcg_E9hhIqjB";
-const TABLE_NAME = "Halalfood";
+let currentTable = "Halalfood";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -16,6 +16,13 @@ const searchSuggestions = document.getElementById("search-suggestions");
 const restaurantList = document.getElementById("restaurant-list");
 const statusBox = document.getElementById("status");
 const resultCount = document.getElementById("result-count");
+const menuButton = document.getElementById("menu-button");
+const sideMenu = document.getElementById("side-menu");
+const menuClose = document.getElementById("menu-close");
+const menuOverlay = document.getElementById("menu-overlay");
+const menuEntries = document.querySelectorAll(".menu-entry");
+const pageTitle = document.getElementById("page-title");
+const pageSubtitle = document.getElementById("page-subtitle");
 
 let restaurants = [];
 let markerLayer = L.layerGroup().addTo(map);
@@ -127,7 +134,7 @@ async function loadRestaurants() {
   statusBox.textContent = "Daten werden geladen …";
 
   const { data, error } = await client
-    .from(TABLE_NAME)
+    .from(currentTable)
     .select("*")
     .order("name", { ascending: true });
 
@@ -222,4 +229,46 @@ function createMapLinks(item) {
     </div>
   `;
 }
+function openMenu() {
+  sideMenu.classList.add("open");
+  menuOverlay.classList.add("visible");
+}
+
+function closeMenu() {
+  sideMenu.classList.remove("open");
+  menuOverlay.classList.remove("visible");
+}
+
+menuButton.addEventListener("click", openMenu);
+menuClose.addEventListener("click", closeMenu);
+menuOverlay.addEventListener("click", closeMenu);
+
+menuEntries.forEach((entry) => {
+  entry.addEventListener("click", () => {
+    currentTable = entry.dataset.table;
+
+    menuEntries.forEach((button) => {
+      button.classList.remove("active");
+    });
+
+    entry.classList.add("active");
+
+    pageTitle.textContent = entry.dataset.title;
+
+    if (currentTable === "Halalfood") {
+      pageSubtitle.textContent =
+        "Restaurants über Suche und Karte entdecken";
+    } else {
+      pageSubtitle.textContent =
+        "Metzgereien über Suche und Karte entdecken";
+    }
+
+    searchInput.value = "";
+    searchSuggestions.innerHTML = "";
+    searchSuggestions.style.display = "none";
+
+    closeMenu();
+    loadRestaurants();
+  });
+});
 loadRestaurants();
