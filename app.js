@@ -56,6 +56,7 @@ function popupContent(item) {
     ${address ? "<br>" + escapeHtml(address) : ""}
     ${item.oeffnungszeiten ? "<br><br><strong>Öffnungszeiten:</strong><br>" + escapeHtml(item.oeffnungszeiten) : ""}
     ${item.telefonnummer ? "<br><br><strong>Telefon:</strong> " + escapeHtml(item.telefonnummer) : ""}
+    ${item.hinweise ? `<p class="hinweis">ℹ️ ${escapeHtml(item.hinweise)}</p>` : ""}
     ${createMapLinks(item)}
   `;
 }
@@ -90,6 +91,7 @@ function render(items) {
       ${item.oeffnungszeiten ? `<p>🕒 ${escapeHtml(item.oeffnungszeiten)}</p>` : ""}
       ${item.telefonnummer ? `<p>☎️ ${escapeHtml(item.telefonnummer)}</p>` : ""}
       ${item.webseite ? `<p><a href="${escapeHtml(item.webseite)}" target="_blank" rel="noopener">Webseite öffnen</a></p>` : ""}
+      ${item.hinweise ? `<p class="hinweis">ℹ️ ${escapeHtml(item.hinweise)}</p>` : ""}
       ${createMapLinks(item)}
     `;
 
