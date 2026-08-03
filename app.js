@@ -291,8 +291,13 @@ function render(items) {
       const lng = Number(item.longitude);
 
       const marker = L.marker([lat, lng])
-        .bindPopup(popupContent(item))
-        .addTo(markerLayer);
+  .bindPopup(popupContent(item), {
+    maxWidth: 320,
+    maxHeight: 420,
+    autoPan: true,
+    keepInView: true
+  })
+  .addTo(markerLayer);
 
       coordinates.push([lat, lng]);
 
