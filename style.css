@@ -10,6 +10,12 @@ body {
   background: #f4f7f5;
 }
 
+[hidden] {
+  display: none !important;
+}
+
+/* Kopfbereich */
+
 .topbar {
   position: relative;
   z-index: 2000;
@@ -31,6 +37,8 @@ body {
   margin: 5px 0 0;
   color: #617067;
 }
+
+/* Bereiche: Restaurants, Metzgereien, Fleischmarken */
 
 .category-nav {
   display: flex;
@@ -59,6 +67,8 @@ body {
   color: #ffffff;
   border-color: #237a4b;
 }
+
+/* Suche */
 
 .search-wrapper {
   position: relative;
@@ -108,13 +118,20 @@ body {
   background: #f4f7f5;
 }
 
+/* Kartenansicht */
+
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 390px;
   height: calc(100vh - 142px);
 }
 
-.map-section,
+.map-section {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 #map {
   width: 100%;
   height: 100%;
@@ -130,6 +147,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 14px;
   margin-bottom: 14px;
 }
 
@@ -137,8 +155,15 @@ body {
   margin: 0;
 }
 
+#result-count,
+#brand-result-count {
+  color: #617067;
+  font-size: 14px;
+}
+
 .status,
 .restaurant-card,
+.brand-card,
 .empty {
   background: #ffffff;
   border-radius: 12px;
@@ -160,6 +185,11 @@ body {
   cursor: pointer;
 }
 
+.restaurant-card:hover {
+  border-color: #aebdb3;
+  box-shadow: 0 7px 20px rgba(25, 55, 36, 0.08);
+}
+
 .restaurant-card h3 {
   margin: 0 0 8px;
 }
@@ -179,6 +209,8 @@ body {
   font-size: 13px;
 }
 
+/* Hinweise */
+
 .hinweis {
   padding: 10px 12px;
   margin-top: 10px;
@@ -187,6 +219,8 @@ body {
   border-radius: 6px;
   color: #5f4b00;
 }
+
+/* Google Maps / Apple Karten */
 
 .map-links {
   display: flex;
@@ -219,39 +253,8 @@ body {
   background: #185f39;
 }
 
-.empty {
-  padding: 18px;
-  text-align: center;
-  color: #617067;
-}
+/* Öffnungszeiten */
 
-@media (max-width: 850px) {
-  .topbar {
-    display: block;
-    padding: 16px;
-  }
-
-  .search-wrapper {
-    width: 100%;
-    margin-top: 16px;
-  }
-
-  .layout {
-    display: block;
-    height: auto;
-  }
-
-  .map-section,
-  #map {
-    height: 55vh;
-    min-height: 380px;
-  }
-
-  .results-section {
-    border-left: 0;
-    border-top: 1px solid #dfe7e2;
-  }
-}
 .opening-details {
   margin-top: 10px;
 }
@@ -278,18 +281,22 @@ body {
 }
 
 .opening-list {
-  margin-top: 10px;
   display: grid;
   gap: 8px;
+  margin-top: 10px;
 }
 
 .opening-row {
   display: grid;
-  grid-template-columns: 95px 1fr;
+  grid-template-columns: 95px minmax(0, 1fr);
   gap: 10px;
   align-items: start;
   padding-bottom: 6px;
   border-bottom: 1px solid #eeeeee;
+}
+
+.opening-row:last-child {
+  border-bottom: 0;
 }
 
 .opening-row strong {
@@ -299,34 +306,10 @@ body {
 .opening-row span {
   white-space: pre-line;
   color: #536259;
-}
-.leaflet-popup-content-wrapper {
-  max-width: 320px;
-  max-height: 420px;
-  overflow: hidden;
-}
-
-.leaflet-popup-content {
-  max-height: 360px;
-  overflow-y: auto;
-  margin: 14px 16px;
   line-height: 1.4;
 }
 
-.leaflet-popup-content .opening-list {
-  max-height: 220px;
-  overflow-y: auto;
-}
-
-.leaflet-popup-content .map-links {
-  position: sticky;
-  bottom: 0;
-  background: white;
-  padding-top: 10px;
-}
-.map-section {
-  position: relative;
-}
+/* Feste Infokarte unten links */
 
 .map-info-card {
   display: none;
@@ -338,7 +321,7 @@ body {
   max-height: 70%;
   overflow-y: auto;
   padding: 18px;
-  background: white;
+  background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
 }
@@ -376,4 +359,195 @@ body {
 .map-info-card .map-button {
   width: 100%;
   text-align: center;
+}
+
+/* Fleischmarken-Ansicht */
+
+.brands-layout {
+  min-height: calc(100vh - 142px);
+  padding: 28px;
+  background: #f4f7f5;
+}
+
+.brands-section {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+}
+
+.brand-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.brand-card {
+  overflow: hidden;
+  border: 1px solid #dfe7e2;
+  box-shadow: 0 5px 18px rgba(25, 55, 36, 0.06);
+}
+
+.brand-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(25, 55, 36, 0.12);
+}
+
+.brand-image-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 190px;
+  padding: 18px;
+  background: #ffffff;
+  border-bottom: 1px solid #edf1ee;
+}
+
+.brand-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: #e8f4ec;
+  color: #237a4b;
+  font-size: 38px;
+  font-weight: 700;
+}
+
+.brand-card-content {
+  padding: 18px;
+}
+
+.brand-card h3 {
+  margin: 0 0 10px;
+  font-size: 21px;
+}
+
+.brand-card p {
+  margin: 7px 0;
+  color: #536259;
+  line-height: 1.45;
+}
+
+.brand-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.brand-tag {
+  display: inline-block;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #eef4f0;
+  color: #315b42;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.halal-verified {
+  display: inline-block;
+  padding: 7px 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+  background: #e8f4ec;
+  color: #1c6a40;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.brand-actions {
+  display: flex;
+  gap: 9px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.brand-link {
+  display: inline-block;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #237a4b;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.brand-link.secondary {
+  background: #ffffff;
+  color: #237a4b !important;
+  border: 1px solid #237a4b;
+}
+
+.brand-link:hover {
+  opacity: 0.88;
+}
+
+.empty {
+  padding: 18px;
+  text-align: center;
+  color: #617067;
+}
+
+/* Tablet */
+
+@media (max-width: 1000px) {
+  .brand-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Handy */
+
+@media (max-width: 850px) {
+  .topbar {
+    display: block;
+    padding: 16px;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .layout {
+    display: block;
+    height: auto;
+  }
+
+  .map-section,
+  #map {
+    height: 55vh;
+    min-height: 380px;
+  }
+
+  .results-section {
+    border-left: 0;
+    border-top: 1px solid #dfe7e2;
+  }
+
+  .map-info-card {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    width: auto;
+    max-height: 58%;
+    padding: 16px;
+  }
+
+  .brands-layout {
+    padding: 18px 14px;
+  }
+
+  .brand-list {
+    grid-template-columns: 1fr;
+  }
 }
