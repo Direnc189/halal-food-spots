@@ -26,7 +26,9 @@ let entries = [];
 let markerLayer = L.layerGroup().addTo(map);
 
 function clean(value) {
-  return value === null || value === undefined ? "" : String(value).trim();
+  return value === null || value === undefined
+    ? ""
+    : String(value).trim();
 }
 
 function escapeHtml(value) {
@@ -41,13 +43,88 @@ function escapeHtml(value) {
 function createAddress(item) {
   return [
     clean(item.adresse),
-    [clean(item.postleitzahl), clean(item.stadt)].filter(Boolean).join(" ")
-  ].filter(Boolean).join(", ");
+    [clean(item.postleitzahl), clean(item.stadt)]
+      .filter(Boolean)
+      .join(" ")
+  ]
+    .filter(Boolean)
+    .join(", ");
 }
 
 function hasCoordinates(item) {
-  return Number.isFinite(Number(item.latitude)) &&
-         Number.isFinite(Number(item.longitude));
+  return (
+    Number.isFinite(Number(item.latitude)) &&
+    Number.isFinite(Number(item.longitude))
+  );
+}
+
+function formatOpeningHours(value) {
+  const text = clean(value);
+
+  if (!text) {
+    return "";
+  }
+
+  const days = [
+    "Montag",
+    "Dienstag",
+    "Mittwoch",
+    "Donnerstag",
+    "Freitag",
+    "Samstag",
+    "Sonntag"
+  ];
+
+  let normalized = text
+    .replaceAll("\r", " ")
+    .replaceAll("\n", " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  days.forEach((day) => {
+    normalized = normalized.replace(
+      new RegExp(`\\s*${day}\\s*`, "gi"),
+      `|${day}#`
+    );
+  });
+
+  const rows = normalized
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const separatorIndex = part.indexOf("#");
+
+      if (separatorIndex === -1) {
+        return "";
+      }
+
+      const day = part.slice(0, separatorIndex).trim();
+      const hours = part.slice(separatorIndex + 1).trim();
+
+      const formattedHours = hours
+        .replace(/\s*;\s*/g, "<br>")
+        .replace(/\s*\/\s*/g, "<br>")
+        .replace(/\s*,\s*(?=\d{1,2}:\d{2})/g, "<br>");
+
+      return `
+        <div class="opening-row">
+          <strong>${escapeHtml(day)}</strong>
+          <span>${formattedHours}</span>
+        </div>
+      `;
+    })
+    .join("");
+
+  return `
+    <details class="opening-details">
+      <summary>🕒 Öffnungszeiten anzeigen</summary>
+
+      <div class="opening-list">
+        ${rows}
+      </div>
+    </details>
+  `;
 }
 
 function createMapLinks(item) {
@@ -59,19 +136,29 @@ function createMapLinks(item) {
   const lng = Number(item.longitude);
   const name = encodeURIComponent(clean(item.name || "Eintrag"));
 
+  const googleMapsUrl =
+    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+  const appleMapsUrl =
+    `https://maps.apple.com/?daddr=${lat},${lng}&q=${name}`;
+
   return `
     <div class="map-links">
-      <a class="map-button"
-         href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}"
-         target="_blank"
-         rel="noopener">
+      <a
+        class="map-button"
+        href="${googleMapsUrl}"
+        target="_blank"
+        rel="noopener"
+      >
         Google Maps
       </a>
 
-      <a class="map-button"
-         href="https://maps.apple.com/?daddr=${lat},${lng}&q=${name}"
-         target="_blank"
-         rel="noopener">
+      <a
+        class="map-button"
+        href="${appleMapsUrl}"
+        target="_blank"
+        rel="noopener"
+      >
         Apple Karten
       </a>
     </div>
@@ -83,10 +170,23 @@ function popupContent(item) {
 
   return `
     <strong>${escapeHtml(item.name || "Eintrag")}</strong>
-    ${address ? "<br>" + escapeHtml(address) : ""}
-    ${item.oeffnungszeiten ? "<br><br><strong>Öffnungszeiten:</strong><br>" + escapeHtml(item.oeffnungszeiten) : ""}
-    ${item.telefonnummer ? "<br><br><strong>Telefon:</strong> " + escapeHtml(item.telefonnummer) : ""}
-    ${item.hinweise ? `<div class="hinweis">ℹ️ ${escapeHtml(item.hinweise)}</div>` : ""}
+
+    ${address ? `<br>${escapeHtml(address)}` : ""}
+
+    ${formatOpeningHours(item.oeffnungszeiten)}
+
+    ${
+      item.telefonnummer
+        ? `<p><strong>Telefon:</strong><br>${escapeHtml(item.telefonnummer)}</p>`
+        : ""
+    }
+
+    ${
+      item.hinweise
+        ? `<div class="hinweis">ℹ️ ${escapeHtml(item.hinweise)}</div>`
+        : ""
+    }
+
     ${createMapLinks(item)}
   `;
 }
@@ -111,24 +211,57 @@ function render(items) {
     card.className = "restaurant-card";
 
     const address = createAddress(item);
+
     const badges = [item.kategorie, item.land_der_kueche]
       .filter(Boolean)
-      .map((value) => `<span class="badge">${escapeHtml(value)}</span>`)
+      .map(
+        (value) =>
+          `<span class="badge">${escapeHtml(value)}</span>`
+      )
       .join("");
 
     card.innerHTML = `
       <h3>${escapeHtml(item.name || "Unbenannter Eintrag")}</h3>
+
       ${badges ? `<div>${badges}</div>` : ""}
+
       ${address ? `<p>📍 ${escapeHtml(address)}</p>` : ""}
-      ${item.oeffnungszeiten ? `<p>🕒 ${escapeHtml(item.oeffnungszeiten)}</p>` : ""}
-      ${item.telefonnummer ? `<p>☎️ ${escapeHtml(item.telefonnummer)}</p>` : ""}
-      ${item.webseite ? `<p><a href="${escapeHtml(item.webseite)}" target="_blank" rel="noopener">Webseite öffnen</a></p>` : ""}
-      ${item.hinweise ? `<p class="hinweis">ℹ️ ${escapeHtml(item.hinweise)}</p>` : ""}
+
+      ${formatOpeningHours(item.oeffnungszeiten)}
+
+      ${
+        item.telefonnummer
+          ? `<p>☎️ ${escapeHtml(item.telefonnummer)}</p>`
+          : ""
+      }
+
+      ${
+        item.webseite
+          ? `
+            <p>
+              <a
+                href="${escapeHtml(item.webseite)}"
+                target="_blank"
+                rel="noopener"
+              >
+                Webseite öffnen
+              </a>
+            </p>
+          `
+          : ""
+      }
+
+      ${
+        item.hinweise
+          ? `<p class="hinweis">ℹ️ ${escapeHtml(item.hinweise)}</p>`
+          : ""
+      }
+
       ${createMapLinks(item)}
     `;
 
-    card.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", (event) => {
+    card.querySelectorAll("a, summary").forEach((element) => {
+      element.addEventListener("click", (event) => {
         event.stopPropagation();
       });
     });
@@ -155,7 +288,9 @@ function render(items) {
   if (coordinates.length === 1) {
     map.setView(coordinates[0], 14);
   } else if (coordinates.length > 1) {
-    map.fitBounds(coordinates, { padding: [35, 35] });
+    map.fitBounds(coordinates, {
+      padding: [35, 35]
+    });
   }
 }
 
@@ -171,24 +306,32 @@ async function loadEntries() {
   const { data, error } = await client
     .from(currentTable)
     .select("*")
-    .order("name", { ascending: true });
+    .order("name", {
+      ascending: true
+    });
 
   if (error) {
     console.error(error);
+
     statusBox.innerHTML = `
       Die Daten konnten nicht geladen werden.<br>
       <small>${escapeHtml(error.message)}</small>
     `;
+
     return;
   }
 
   entries = data || [];
   statusBox.style.display = "none";
+
   render(entries);
 }
 
 searchInput.addEventListener("input", () => {
-  const query = searchInput.value.toLowerCase().trim();
+  const query = searchInput.value
+    .toLowerCase()
+    .trim();
+
   searchSuggestions.innerHTML = "";
 
   if (!query) {
@@ -198,24 +341,30 @@ searchInput.addEventListener("input", () => {
   }
 
   const filtered = entries.filter((item) =>
-    String(item.name || "").toLowerCase().includes(query)
+    String(item.name || "")
+      .toLowerCase()
+      .includes(query)
   );
 
   if (filtered.length === 0) {
     searchSuggestions.innerHTML =
       '<div class="suggestion-empty">Kein Eintrag gefunden</div>';
+
     searchSuggestions.style.display = "block";
     return;
   }
 
   filtered.forEach((item) => {
     const suggestion = document.createElement("div");
+
     suggestion.className = "search-suggestion";
-    suggestion.textContent = item.name || "Unbenannter Eintrag";
+    suggestion.textContent =
+      item.name || "Unbenannter Eintrag";
 
     suggestion.addEventListener("click", () => {
       searchInput.value = item.name || "";
       searchSuggestions.style.display = "none";
+
       render([item]);
     });
 
