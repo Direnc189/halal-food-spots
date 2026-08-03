@@ -61,7 +61,16 @@ function hasCoordinates(item) {
 function formatOpeningHours(value) {
   const text = clean(value);
 
-  if (!text) {
+  const emptyValues = [
+    "",
+    "null",
+    "undefined",
+    "-",
+    "keine angabe",
+    "nicht bekannt"
+  ];
+
+  if (emptyValues.includes(text.toLowerCase())) {
     return "";
   }
 
@@ -102,7 +111,11 @@ function formatOpeningHours(value) {
       const day = part.slice(0, separatorIndex).trim();
       const hours = part.slice(separatorIndex + 1).trim();
 
-      const formattedHours = hours
+      if (!day || !hours) {
+        return "";
+      }
+
+      const formattedHours = escapeHtml(hours)
         .replace(/\s*;\s*/g, "<br>")
         .replace(/\s*\/\s*/g, "<br>")
         .replace(/\s*,\s*(?=\d{1,2}:\d{2})/g, "<br>");
@@ -114,7 +127,12 @@ function formatOpeningHours(value) {
         </div>
       `;
     })
+    .filter(Boolean)
     .join("");
+
+  if (!rows) {
+    return "";
+  }
 
   return `
     <details class="opening-details">
