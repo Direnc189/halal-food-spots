@@ -300,3 +300,27 @@ body {
   white-space: pre-line;
   color: #536259;
 }
+.leaflet-popup-content-wrapper {
+  max-width: 320px;
+  max-height: 420px;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  max-height: 360px;
+  overflow-y: auto;
+  margin: 14px 16px;
+  line-height: 1.4;
+}
+
+.leaflet-popup-content .opening-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.leaflet-popup-content .map-links {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding-top: 10px;
+}
