@@ -2,6 +2,7 @@ const SUPABASE_URL = "https://bjoxewglffzjdpuayiff.supabase.co";
 const SUPABASE_KEY = "sb_publishable_8qRvMeEpTjBzPsCDGFYqcg_E9hhIqjB";
 
 let currentTable = "Halalfood";
+let currentView = "map";
 
 const client = supabase.createClient(
   SUPABASE_URL,
@@ -21,20 +22,13 @@ L.tileLayer(
   }
 ).addTo(map);
 
+/* Allgemeine Elemente */
+
 const searchInput =
   document.getElementById("search");
 
 const searchSuggestions =
   document.getElementById("search-suggestions");
-
-const restaurantList =
-  document.getElementById("restaurant-list");
-
-const statusBox =
-  document.getElementById("status");
-
-const resultCount =
-  document.getElementById("result-count");
 
 const menuEntries =
   document.querySelectorAll(".menu-entry");
@@ -45,16 +39,48 @@ const pageTitle =
 const pageSubtitle =
   document.getElementById("page-subtitle");
 
+/* Kartenansicht */
+
+const mapLayout =
+  document.getElementById("map-layout");
+
+const restaurantList =
+  document.getElementById("restaurant-list");
+
+const statusBox =
+  document.getElementById("status");
+
+const resultCount =
+  document.getElementById("result-count");
+
 const resultsTitle =
   document.getElementById("results-title");
 
 const mapInfoCard =
   document.getElementById("map-info-card");
 
+/* Fleischmarkenansicht */
+
+const brandsLayout =
+  document.getElementById("brands-layout");
+
+const brandList =
+  document.getElementById("brand-list");
+
+const brandStatus =
+  document.getElementById("brand-status");
+
+const brandResultCount =
+  document.getElementById("brand-result-count");
+
+/* Daten */
+
 let entries = [];
 
 let markerLayer =
   L.layerGroup().addTo(map);
+
+/* Hilfsfunktionen */
 
 function clean(value) {
   if (value === null || value === undefined) {
@@ -100,6 +126,36 @@ function hasCoordinates(item) {
     Number.isFinite(longitude)
   );
 }
+
+function isYes(value) {
+  const normalized = clean(value).toLowerCase();
+
+  return [
+    "ja",
+    "true",
+    "1",
+    "yes"
+  ].includes(normalized);
+}
+
+function safeExternalUrl(value) {
+  const url = clean(value);
+
+  if (!url) {
+    return "";
+  }
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://")
+  ) {
+    return url;
+  }
+
+  return `https://${url}`;
+}
+
+/* Öffnungszeiten */
 
 function formatOpeningHours(value) {
   const text = clean(value);
@@ -200,6 +256,8 @@ function formatOpeningHours(value) {
   `;
 }
 
+/* Kartenlinks */
+
 function createMapLinks(item) {
   if (!hasCoordinates(item)) {
     return "";
@@ -247,6 +305,8 @@ function createMapLinks(item) {
   `;
 }
 
+/* Infokarte auf der Karte */
+
 function hideMapInfo() {
   if (!mapInfoCard) {
     return;
@@ -258,10 +318,6 @@ function hideMapInfo() {
 
 function showMapInfo(item) {
   if (!mapInfoCard) {
-    console.error(
-      "Das Element #map-info-card fehlt in index.html."
-    );
-
     return;
   }
 
@@ -307,7 +363,7 @@ function showMapInfo(item) {
         ? `
           <p>
             <a
-              href="${escapeHtml(item.webseite)}"
+              href="${escapeHtml(safeExternalUrl(item.webseite))}"
               target="_blank"
               rel="noopener"
             >
@@ -334,9 +390,7 @@ function showMapInfo(item) {
   mapInfoCard.classList.add("visible");
 
   const closeButton =
-    mapInfoCard.querySelector(
-      ".map-info-close"
-    );
+    mapInfoCard.querySelector(".map-info-close");
 
   if (closeButton) {
     closeButton.addEventListener(
@@ -360,7 +414,9 @@ function showMapInfo(item) {
     });
 }
 
-function render(items) {
+/* Restaurants und Metzgereien rendern */
+
+function renderMapEntries(items) {
   restaurantList.innerHTML = "";
   markerLayer.clearLayers();
   hideMapInfo();
@@ -374,9 +430,7 @@ function render(items) {
 
   if (items.length === 0) {
     restaurantList.innerHTML =
-      '<div class="empty">' +
-      "Keine passenden Einträge gefunden." +
-      "</div>";
+      '<div class="empty">Keine passenden Einträge gefunden.</div>';
 
     return;
   }
@@ -449,7 +503,7 @@ function render(items) {
           ? `
             <p>
               <a
-                href="${escapeHtml(item.webseite)}"
+                href="${escapeHtml(safeExternalUrl(item.webseite))}"
                 target="_blank"
                 rel="noopener"
               >
@@ -474,9 +528,7 @@ function render(items) {
     `;
 
     card
-      .querySelectorAll(
-        "a, summary, details"
-      )
+      .querySelectorAll("a, summary, details")
       .forEach((element) => {
         element.addEventListener(
           "click",
@@ -541,21 +593,221 @@ function render(items) {
   }
 }
 
+/* Fleischmarken rendern */
+
+function createBrandImage(item) {
+  const imageUrl =
+    safeExternalUrl(item.bild);
+
+  if (imageUrl) {
+    return `
+      <div class="brand-image-wrapper">
+        <img
+          class="brand-image"
+          src="${escapeHtml(imageUrl)}"
+          alt="${escapeHtml(item.name || "Fleischmarke")}"
+          loading="lazy"
+          onerror="this.parentElement.innerHTML='<div class=&quot;brand-image-placeholder&quot;>🥩</div>'"
+        >
+      </div>
+    `;
+  }
+
+  return `
+    <div class="brand-image-wrapper">
+      <div class="brand-image-placeholder">
+        🥩
+      </div>
+    </div>
+  `;
+}
+
+function renderBrandEntries(items) {
+  brandList.innerHTML = "";
+
+  brandResultCount.textContent =
+    `${items.length} ${
+      items.length === 1
+        ? "Eintrag"
+        : "Einträge"
+    }`;
+
+  if (items.length === 0) {
+    brandList.innerHTML =
+      '<div class="empty">Keine passenden Fleischmarken gefunden.</div>';
+
+    return;
+  }
+
+  items.forEach((item) => {
+    const card =
+      document.createElement("article");
+
+    card.className =
+      "brand-card";
+
+    const website =
+      safeExternalUrl(item.webseite);
+
+    const certificate =
+      safeExternalUrl(item.zertifikat_link);
+
+    const halalLabel =
+      isYes(item.halal_zertifiziert)
+        ? `
+          <div class="halal-verified">
+            ✓ Halal zertifiziert
+          </div>
+        `
+        : "";
+
+    card.innerHTML = `
+      ${createBrandImage(item)}
+
+      <div class="brand-card-content">
+        <h3>
+          ${escapeHtml(item.name || "Unbenannte Marke")}
+        </h3>
+
+        <div class="brand-meta">
+          ${
+            item.kategorie
+              ? `
+                <span class="brand-tag">
+                  ${escapeHtml(item.kategorie)}
+                </span>
+              `
+              : ""
+          }
+
+          ${
+            item.herkunft
+              ? `
+                <span class="brand-tag">
+                  ${escapeHtml(item.herkunft)}
+                </span>
+              `
+              : ""
+          }
+        </div>
+
+        ${halalLabel}
+
+        ${
+          item.zertifizierungsstelle
+            ? `
+              <p>
+                <strong>Zertifizierungsstelle:</strong><br>
+                ${escapeHtml(item.zertifizierungsstelle)}
+              </p>
+            `
+            : ""
+        }
+
+        ${
+          item.hinweise
+            ? `
+              <p class="hinweis">
+                ℹ️ ${escapeHtml(item.hinweise)}
+              </p>
+            `
+            : ""
+        }
+
+        ${
+          website || certificate
+            ? `
+              <div class="brand-actions">
+                ${
+                  website
+                    ? `
+                      <a
+                        class="brand-link"
+                        href="${escapeHtml(website)}"
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        Herstellerseite
+                      </a>
+                    `
+                    : ""
+                }
+
+                ${
+                  certificate
+                    ? `
+                      <a
+                        class="brand-link secondary"
+                        href="${escapeHtml(certificate)}"
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        Zertifikat
+                      </a>
+                    `
+                    : ""
+                }
+              </div>
+            `
+            : ""
+        }
+      </div>
+    `;
+
+    brandList.appendChild(card);
+  });
+}
+
+/* Ansicht wechseln */
+
+function showMapView() {
+  mapLayout.hidden = false;
+  brandsLayout.hidden = true;
+
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 50);
+}
+
+function showBrandsView() {
+  mapLayout.hidden = true;
+  brandsLayout.hidden = false;
+
+  hideMapInfo();
+  markerLayer.clearLayers();
+}
+
+/* Daten laden */
+
 async function loadEntries() {
   entries = [];
 
-  restaurantList.innerHTML = "";
-  markerLayer.clearLayers();
-  hideMapInfo();
+  searchInput.value = "";
+  searchSuggestions.innerHTML = "";
+  searchSuggestions.style.display = "none";
 
-  resultCount.textContent =
-    "0 Einträge";
+  if (currentView === "brands") {
+    showBrandsView();
 
-  statusBox.style.display =
-    "block";
+    brandList.innerHTML = "";
+    brandResultCount.textContent = "0 Einträge";
 
-  statusBox.textContent =
-    "Daten werden geladen …";
+    brandStatus.style.display = "block";
+    brandStatus.textContent =
+      "Daten werden geladen …";
+  } else {
+    showMapView();
+
+    restaurantList.innerHTML = "";
+    markerLayer.clearLayers();
+    hideMapInfo();
+
+    resultCount.textContent = "0 Einträge";
+
+    statusBox.style.display = "block";
+    statusBox.textContent =
+      "Daten werden geladen …";
+  }
 
   const { data, error } =
     await client
@@ -571,7 +823,7 @@ async function loadEntries() {
   if (error) {
     console.error(error);
 
-    statusBox.innerHTML = `
+    const errorHtml = `
       Die Daten konnten nicht geladen werden.
       <br>
       <small>
@@ -579,15 +831,34 @@ async function loadEntries() {
       </small>
     `;
 
+    if (currentView === "brands") {
+      brandStatus.innerHTML = errorHtml;
+    } else {
+      statusBox.innerHTML = errorHtml;
+    }
+
     return;
   }
 
   entries = data || [];
 
-  statusBox.style.display =
-    "none";
+  if (currentView === "brands") {
+    brandStatus.style.display = "none";
+    renderBrandEntries(entries);
+  } else {
+    statusBox.style.display = "none";
+    renderMapEntries(entries);
+  }
+}
 
-  render(entries);
+/* Suche */
+
+function renderFilteredEntries(items) {
+  if (currentView === "brands") {
+    renderBrandEntries(items);
+  } else {
+    renderMapEntries(items);
+  }
 }
 
 searchInput.addEventListener(
@@ -598,14 +869,13 @@ searchInput.addEventListener(
         .toLowerCase()
         .trim();
 
-    searchSuggestions.innerHTML =
-      "";
+    searchSuggestions.innerHTML = "";
 
     if (!query) {
       searchSuggestions.style.display =
         "none";
 
-      render(entries);
+      renderFilteredEntries(entries);
 
       return;
     }
@@ -621,12 +891,12 @@ searchInput.addEventListener(
 
     if (filtered.length === 0) {
       searchSuggestions.innerHTML =
-        '<div class="suggestion-empty">' +
-        "Kein Eintrag gefunden" +
-        "</div>";
+        '<div class="suggestion-empty">Kein Eintrag gefunden</div>';
 
       searchSuggestions.style.display =
         "block";
+
+      renderFilteredEntries([]);
 
       return;
     }
@@ -651,9 +921,12 @@ searchInput.addEventListener(
           searchSuggestions.style.display =
             "none";
 
-          render([item]);
+          renderFilteredEntries([item]);
 
-          if (hasCoordinates(item)) {
+          if (
+            currentView === "map" &&
+            hasCoordinates(item)
+          ) {
             const latitude =
               Number(item.latitude);
 
@@ -684,12 +957,8 @@ document.addEventListener(
   "click",
   (event) => {
     if (
-      !searchInput.contains(
-        event.target
-      ) &&
-      !searchSuggestions.contains(
-        event.target
-      )
+      !searchInput.contains(event.target) &&
+      !searchSuggestions.contains(event.target)
     ) {
       searchSuggestions.style.display =
         "none";
@@ -697,12 +966,17 @@ document.addEventListener(
   }
 );
 
+/* Menüpunkte */
+
 menuEntries.forEach((entry) => {
   entry.addEventListener(
     "click",
     () => {
       currentTable =
         entry.dataset.table;
+
+      currentView =
+        entry.dataset.view || "map";
 
       menuEntries.forEach(
         (button) => {
@@ -722,21 +996,19 @@ menuEntries.forEach((entry) => {
       pageSubtitle.textContent =
         entry.dataset.subtitle;
 
-      resultsTitle.textContent =
-        entry.dataset.resultsTitle;
+      if (
+        currentView === "map" &&
+        resultsTitle
+      ) {
+        resultsTitle.textContent =
+          entry.dataset.resultsTitle;
+      }
 
-      searchInput.value = "";
-
-      searchSuggestions.innerHTML =
-        "";
-
-      searchSuggestions.style.display =
-        "none";
-
-      hideMapInfo();
       loadEntries();
     }
   );
 });
+
+/* Start */
 
 loadEntries();
