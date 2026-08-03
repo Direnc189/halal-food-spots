@@ -206,3 +206,12 @@ body {
 .search-suggestion:last-child {
   border-bottom: none;
 }
+.hinweis {
+  padding: 10px 12px;
+  margin-top: 10px;
+  background: #fff8dc;
+  border-left: 4px solid #d6a400;
+  border-radius: 6px;
+  color: #5f4b00;
+  line-height: 1.4;
+}
