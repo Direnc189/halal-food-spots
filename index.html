@@ -11,9 +11,38 @@
 </head>
 <body>
   <header class="topbar">
+    <button id="menu-button" class="menu-button" aria-label="Menü öffnen">
+  ☰
+</button>
+
+<nav id="side-menu" class="side-menu">
+  <button id="menu-close" class="menu-close" aria-label="Menü schließen">
+    ×
+  </button>
+
+  <h2>Bereiche</h2>
+
+  <button
+    class="menu-entry active"
+    data-table="Halalfood"
+    data-title="Halal Restaurants"
+  >
+    Restaurants
+  </button>
+
+  <button
+    class="menu-entry"
+    data-table="Metzgereien"
+    data-title="Halal Metzgereien"
+  >
+    Metzgereien
+  </button>
+</nav>
+
+<div id="menu-overlay" class="menu-overlay"></div>
     <div>
-      <h1>Halal Food Spots</h1>
-      <p>Restaurants über Suche und Karte entdecken</p>
+      <h1 id="page-title">Halal Restaurants</h1>
+      <p id="page-subtitle">Restaurants über Suche und Karte entdecken</p>
     </div>
     <input
       id="search"
