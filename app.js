@@ -226,19 +226,7 @@ function createMapLinks(item) {
     </div>
   `;
 }
-function openMenu() {
-  sideMenu.classList.add("open");
-  menuOverlay.classList.add("visible");
-}
 
-function closeMenu() {
-  sideMenu.classList.remove("open");
-  menuOverlay.classList.remove("visible");
-}
-
-menuButton.addEventListener("click", openMenu);
-menuClose.addEventListener("click", closeMenu);
-menuOverlay.addEventListener("click", closeMenu);
 
 menuEntries.forEach((entry) => {
   entry.addEventListener("click", () => {
@@ -264,7 +252,7 @@ menuEntries.forEach((entry) => {
     searchSuggestions.innerHTML = "";
     searchSuggestions.style.display = "none";
 
-    closeMenu();
+   
     loadRestaurants();
   });
 });
