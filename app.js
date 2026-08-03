@@ -287,6 +287,8 @@ function showMapInfo(item) {
         : ""
     }
 
+    ${formatOpeningHours(item.oeffnungszeiten)}
+
     ${
       item.telefonnummer
         ? `
@@ -347,9 +349,9 @@ function showMapInfo(item) {
   }
 
   mapInfoCard
-    .querySelectorAll("a")
-    .forEach((link) => {
-      link.addEventListener(
+    .querySelectorAll("a, summary, details")
+    .forEach((element) => {
+      element.addEventListener(
         "click",
         (event) => {
           event.stopPropagation();
