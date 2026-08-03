@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eat Halal Food</title>
+  <meta name="description" content="Halal-Restaurants und Metzgereien auf einer interaktiven Karte finden.">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-block">
+      <h1 id="page-title">Halal Restaurants</h1>
+      <p id="page-subtitle">Restaurants über Suche und Karte entdecken</p>
+
+      <nav class="category-nav" aria-label="Bereiche">
+        <button
+          class="menu-entry active"
+          data-table="Halalfood"
+          data-title="Halal Restaurants"
+          data-subtitle="Restaurants über Suche und Karte entdecken"
+          data-results-title="Restaurants"
+          type="button"
+        >
+          Restaurants
+        </button>
+
+        <button
+          class="menu-entry"
+          data-table="Metzger"
+          data-title="Halal Metzgereien"
+          data-subtitle="Metzgereien über Suche und Karte entdecken"
+          data-results-title="Metzgereien"
+          type="button"
+        >
+          Metzgereien
+        </button>
+      </nav>
+    </div>
+
+    <div class="search-wrapper">
+      <input
+        id="search"
+        type="search"
+        placeholder="Nach Namen suchen …"
+        autocomplete="off"
+        aria-label="Nach Namen suchen"
+      >
+      <div id="search-suggestions" class="search-suggestions"></div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="map-section">
+      <div id="map" aria-label="Karte mit Einträgen"></div>
+    </section>
+
+    <aside class="results-section">
+      <div class="results-header">
+        <h2 id="results-title">Restaurants</h2>
+        <span id="result-count">0 Einträge</span>
+      </div>
+
+      <div id="status" class="status">Daten werden geladen …</div>
+      <div id="restaurant-list" class="restaurant-list"></div>
+    </aside>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
