@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eat Halal Food</title>
+  <meta name="description" content="Halal-Restaurants, Metzgereien und Fleischmarken entdecken.">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    try {
+      if (sessionStorage.getItem("welcomeSeen") === "1") {
+        document.documentElement.classList.add("welcome-seen");
+      }
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <section id="welcome-screen" class="welcome-screen" aria-labelledby="welcome-title">
+    <div class="welcome-card">
+      <div class="welcome-icon" aria-hidden="true">🤲</div>
+
+      <h1 id="welcome-title">
+        As-Salāmu ʿalaikum liebe Brüder und Schwestern
+      </h1>
+
+      <p>
+        Herzlich willkommen bei <strong>Eat Halal Food</strong>.
+        Wir möchten euch dabei helfen, halal Restaurants, Metzgereien
+        und Fleischmarken einfacher zu finden.
+      </p>
+
+      <p>
+        Besonders wichtig ist uns dabei die <strong>schockfreie Schlachtung</strong>.
+        Deshalb möchten wir hier Anbieter und Produkte sammeln, bei denen
+        nach unseren Informationen auf eine vorherige Betäubung bzw. Schockung
+        verzichtet wird.
+      </p>
+
+      <p>
+        Unser Ziel ist es, gemeinsam eine übersichtliche und hilfreiche
+        Anlaufstelle für unsere muslimischen Geschwister aufzubauen.
+        Die Plattform befindet sich noch im Aufbau und wird Schritt für Schritt erweitert.
+      </p>
+
+      <p class="welcome-closing">
+        <strong>BarakAllahu feekum und viel Freude beim Entdecken! 💚</strong>
+      </p>
+
+      <button id="welcome-enter" class="welcome-enter" type="button">
+        Jetzt entdecken
+      </button>
+
+      <p class="welcome-note">
+        Angaben können sich ändern. Prüft wichtige Informationen im Zweifel
+        direkt beim jeweiligen Anbieter oder Hersteller.
+      </p>
+    </div>
+  </section>
+
+  <header class="topbar">
+    <div class="brand-block">
+      <h1 id="page-title">Halal Restaurants</h1>
+      <p id="page-subtitle">Restaurants über Suche und Karte entdecken</p>
+
+      <nav class="category-nav" aria-label="Bereiche">
+        <button class="menu-entry active"
+          data-table="Halalfood"
+          data-view="map"
+          data-title="Halal Restaurants"
+          data-subtitle="Restaurants über Suche und Karte entdecken"
+          data-results-title="Restaurants"
+          type="button">
+          Restaurants
+        </button>
+
+        <button class="menu-entry"
+          data-table="Metzgereien"
+          data-view="map"
+          data-title="Halal Metzgereien"
+          data-subtitle="Metzgereien über Suche und Karte entdecken"
+          data-results-title="Metzgereien"
+          type="button">
+          Metzgereien
+        </button>
+
+        <button class="menu-entry"
+          data-table="Fleischmarken"
+          data-view="brands"
+          data-title="Halal Fleischmarken"
+          data-subtitle="Fleischmarken und Produkte entdecken"
+          data-results-title="Fleischmarken"
+          type="button">
+          Fleischmarken
+        </button>
+      </nav>
+    </div>
+
+    <div class="search-wrapper">
+      <input id="search" type="search" placeholder="Nach Namen suchen …"
+        autocomplete="off" aria-label="Nach Namen suchen">
+      <div id="search-suggestions" class="search-suggestions"></div>
+    </div>
+  </header>
+
+  <main id="map-layout" class="layout">
+    <section class="map-section">
+      <div id="map" aria-label="Karte mit Einträgen"></div>
+      <div id="map-info-card" class="map-info-card" aria-live="polite"></div>
+    </section>
+
+    <aside class="results-section">
+      <div class="results-header">
+        <h2 id="results-title">Restaurants</h2>
+        <span id="result-count">0 Einträge</span>
+      </div>
+
+      <div id="status" class="status">Daten werden geladen …</div>
+      <div id="restaurant-list" class="restaurant-list"></div>
+    </aside>
+  </main>
+
+  <main id="brands-layout" class="brands-layout" hidden>
+    <section class="brands-section">
+      <div class="results-header">
+        <h2>Fleischmarken</h2>
+        <span id="brand-result-count">0 Einträge</span>
+      </div>
+
+      <div id="brand-status" class="status">Daten werden geladen …</div>
+      <div id="brand-list" class="brand-accordion-list"></div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
